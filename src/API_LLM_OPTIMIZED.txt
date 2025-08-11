@@ -1,0 +1,140 @@
+DEMO SHIPMENT TRACKER API SPECIFICATION
+
+API OVERVIEW:
+The Demo Shipment Tracker API provides comprehensive package tracking information. Users can retrieve package details, status updates, and item-level information using unique tracking numbers.
+
+BASE URL:
+https://<your-demo-domain>/api/v2/package/lookup
+
+ENDPOINT:
+GET /api/v2/package/lookup
+
+REQUIRED PARAMETERS:
+- trackingId (string): Unique tracking number for the package. Example: PKG123456789
+
+OPTIONAL PARAMETERS:
+- fromDate (string): Start date for tracking period in YYYY-MM-DD format. Example: 2025-08-01
+- toDate (string): End date for tracking period in YYYY-MM-DD format. Example: 2025-08-31
+
+FULL REQUEST EXAMPLE:
+GET /api/v2/package/lookup?trackingId=PKG123456789&fromDate=2025-08-01&toDate=2025-08-31
+
+RESPONSE STRUCTURE:
+The API returns a JSON object containing a "packages" array with package information.
+
+RESPONSE EXAMPLE:
+{
+  "packages": [
+    {
+      "packageKey": 987654321,
+      "trackingId": "PKG123456789",
+      "datePartition": 20250811,
+      "serviceType": "EXPRESS",
+      "customerReference": "REF20250811",
+      "originCountry": "DE",
+      "originCity": "Munich",
+      "originFacility": "MUC1",
+      "destinationCountry": "FR",
+      "destinationCity": "Paris",
+      "destinationFacility": "CDG2",
+      "senderName": "REDACTED",
+      "senderContact": "REDACTED",
+      "recipientName": "REDACTED",
+      "recipientContact": "REDACTED",
+      "dispatchDate": "2025-08-11T09:00:00",
+      "itemCount": 2,
+      "packageContents": "ELECTRONICS",
+      "currency": "EUR",
+      "declaredValue": 199.99,
+      "declaredWeight": 2.5,
+      "actualWeight": 2.8,
+      "items": [
+        {
+          "itemId": "ITM987654321",
+          "itemWeightDeclared": 1.2,
+          "itemWeightActual": 1.3,
+          "itemDescription": "Tablet",
+          "statusUpdates": [
+            {
+              "statusCode": "ARR",
+              "statusTimestamp": "2025-08-11T10:00:00",
+              "statusLocation": "MUC1",
+              "statusRemarks": "Arrived at origin facility"
+            }
+          ]
+        }
+      ],
+      "statusUpdates": [
+        {
+          "statusCode": "DEP",
+          "statusTimestamp": "2025-08-11T11:00:00",
+          "statusLocation": "MUC1",
+          "statusRemarks": "Departed from origin facility"
+        }
+      ]
+    }
+  ]
+}
+
+PACKAGE OBJECT FIELDS:
+- packageKey (integer): Unique identifier for the package record
+- trackingId (string): Unique tracking number
+- datePartition (integer): Date of record in YYYYMMDD format
+- serviceType (string): Service type like EXPRESS, STANDARD, etc.
+- customerReference (string): Customer-provided reference
+- originCountry (string): Origin country code
+- originCity (string): Origin city name
+- originFacility (string): Origin facility code
+- destinationCountry (string): Destination country code
+- destinationCity (string): Destination city name
+- destinationFacility (string): Destination facility code
+- senderName (string): Sender name (redacted for privacy)
+- senderContact (string): Sender contact (redacted for privacy)
+- recipientName (string): Recipient name (redacted for privacy)
+- recipientContact (string): Recipient contact (redacted for privacy)
+- dispatchDate (string): Dispatch date/time in ISO 8601 format
+- itemCount (integer): Number of items in package
+- packageContents (string): Description of package contents
+- currency (string): Currency code for monetary values
+- declaredValue (number): Declared package value
+- declaredWeight (number): Declared weight in kilograms
+- actualWeight (number): Actual weight in kilograms
+- items (array): Array of item objects
+- statusUpdates (array): Array of status update objects
+
+ITEM OBJECT FIELDS:
+- itemId (string): Unique item identifier
+- itemWeightDeclared (number): Declared item weight in kilograms
+- itemWeightActual (number): Actual item weight in kilograms
+- itemDescription (string): Item description
+- statusUpdates (array): Array of status updates for this item
+
+STATUS UPDATE OBJECT FIELDS:
+- statusCode (string): Status code (ARR=Arrived, DEP=Departed, etc.)
+- statusTimestamp (string): Status timestamp in ISO 8601 format
+- statusLocation (string): Location where status occurred
+- statusRemarks (string): Additional status information
+
+ERROR RESPONSES:
+- 404 Not Found: Tracking number does not exist
+- 400 Bad Request: Invalid tracking number format
+
+IMPORTANT NOTES:
+- All personal information (sender/recipient details) is redacted for privacy
+- All timestamps use ISO 8601 format
+- All weights are in kilograms
+- Currency values use the currency specified in the currency field
+- Status codes include: ARR (Arrived), DEP (Departed), and others
+- Date partition format is YYYYMMDD (e.g., 20250811 for August 11, 2025)
+
+COMMON STATUS CODES:
+- ARR: Arrived at facility
+- DEP: Departed from facility
+- DEL: Delivered
+- TRN: In transit
+- EXC: Exception/problem
+
+USAGE EXAMPLES:
+1. Track a package: GET /api/v2/package/lookup?trackingId=PKG123456789
+2. Track with date range: GET /api/v2/package/lookup?trackingId=PKG123456789&fromDate=2025-08-01&toDate=2025-08-31
+3. Handle errors: Check HTTP status codes for 404 (not found) or 400 (bad request)
