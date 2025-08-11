@@ -7,10 +7,10 @@ import asyncio
 import sys
 import os
 
-# Add the current directory to the Python path so we can import from app.py
+# Add the current directory to the Python path so we can import from agent.py
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import ShipmentTrackingAgent
+from agent import ShipmentTrackingAgent
 
 
 async def demo():
@@ -45,7 +45,7 @@ async def demo():
         print("-" * 60)
     
     print("\n✅ Demo completed!")
-    print("To run the interactive version, use: python app.py")
+    print("To run the interactive version, use: python main.py")
 
 
 if __name__ == "__main__":

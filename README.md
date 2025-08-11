@@ -14,8 +14,9 @@ This sample application demonstrates how to create a conversational AI agent usi
 
 ### Prerequisites
 
-1. Make sure you have Python 3.12 installed
-2. Set up your configuration in a `.env` file in the samples directory (copy from `.env.example`)
+1. Make sure you have Python 3.13+ installed
+2. [uv](https://github.com/astral-sh/uv) (recommended for dependency management)
+3. Set up your configuration in a `.env` file (copy from `src/.env.example`)
 
 ### Configuration
 
@@ -37,27 +38,36 @@ USE_SIMULATED_API=false  # Set to true for demo mode, false for real API
 
 ### Installation
 
-1. Navigate to the samples directory:
+Install dependencies using uv:
+
 ```bash
-cd samples
+# Install dependencies from pyproject.toml
+uv sync
+
+# Alternatively, if you don't have a lockfile:
+uv pip install -r pyproject.toml
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-Or if you're using the main project's dependencies:
-```bash
-# From the root directory
-pip install -e .
-```
+Dependencies are automatically managed by uv for reproducible installs.
 
 ## Usage
 
-Run the application:
+Run the application using uv:
 ```bash
-python app.py
+# Basic usage
+uv run src/app.py
+
+# Show help
+uv run src/app.py --help
+
+# Enable verbose logging for debugging
+uv run src/app.py --verbose
+```
+
+You can also run it from the project root using the main entry point:
+```bash
+# Alternative entry point
+uv run main.py
 ```
 
 ### Example Conversations
@@ -80,21 +90,63 @@ When `USE_SIMULATED_API=true`, the app includes these sample tracking IDs:
 
 ## Code Structure
 
-### ShipmentTrackingPlugin
+The application has been restructured into a modular architecture for better maintainability and reusability:
 
-This plugin implements the core functionality for tracking packages:
+### 📁 Project Structure
 
-- **track_package()**: Main function that accepts tracking ID and optional date filters
-- **_call_real_api()**: Makes HTTP requests to actual tracking APIs
-- **_simulate_api_response()**: Simulates the Demo Shipment Tracker API responses for demo purposes
+```
+src/
+├── __init__.py              # Package initialization
+├── app.py                   # Main entry point (simplified)
+├── cli.py                   # Command-line interface and interactive session
+├── agent.py                 # Core ShipmentTrackingAgent class
+├── config.py                # Configuration management
+├── utils/                   # Utility modules
+│   ├── __init__.py
+│   ├── logging_config.py    # Logging setup and configuration
+│   └── spinner.py           # Spinner animation utility
+├── filters/                 # Semantic Kernel filters
+│   ├── __init__.py
+│   └── verbose_function_filter.py  # Function call logging
+└── plugins/                 # Semantic Kernel plugins
+    ├── __init__.py
+    └── shipment_tracking_plugin.py  # API integration and simulation
+```
 
-### ShipmentTrackingAgent
+### Core Components
 
+#### `config.py` - Configuration Management
+Centralized configuration class that:
+- Loads environment variables from `.env` file
+- Validates required configuration
+- Provides configuration validation methods
+
+#### `agent.py` - ShipmentTrackingAgent
 The main agent class that orchestrates the conversation:
-
 - **setup_kernel()**: Configures Semantic Kernel with AI services and plugins
 - **chat()**: Processes user messages and returns responses
 - **reset_conversation()**: Resets the chat history
+
+#### `plugins/shipment_tracking_plugin.py` - ShipmentTrackingPlugin
+This plugin implements the core functionality for tracking packages:
+- **track_package()**: Main function that accepts tracking ID and optional date filters
+- **get_current_date_and_time()**: Provides current timestamp for date-based queries
+- **_call_real_api()**: Makes HTTP requests to actual tracking APIs
+- **_simulate_api_response()**: Simulates API responses for demo purposes
+
+#### `utils/` - Utility Modules
+- **logging_config.py**: Logging setup with verbose mode support
+- **spinner.py**: Console spinner animation for better UX
+
+#### `filters/` - Function Call Filters
+- **verbose_function_filter.py**: Detailed logging of function invocations for debugging
+
+#### `cli.py` - Command Line Interface
+Handles user interaction:
+- Command-line argument parsing
+- Interactive chat session management
+- Welcome messages and help text
+- Error handling and graceful shutdown
 
 ## API Integration
 
@@ -156,26 +208,58 @@ USE_SIMULATED_API=false
 
 ## Extending the Application
 
-You can extend this application by:
+The modular structure makes it easy to extend the application:
 
-1. **Adding more API endpoints**: Implement additional tracking functions
-2. **Adding filters**: Implement content filters for security and compliance  
-3. **Adding memory**: Store conversation history and user preferences
-4. **Adding authentication**: Secure access to tracking information
-5. **Adding multiple agents**: Create specialized agents for different types of queries
-6. **Custom authentication**: Modify headers for your specific API authentication requirements
+1. **Adding new plugins**: Create new plugin classes in the `plugins/` directory
+2. **Adding new utilities**: Add utility functions to the `utils/` package
+3. **Adding new filters**: Implement custom filters in the `filters/` package
+4. **Custom configuration**: Extend the `Config` class for new environment variables
+5. **Multiple agents**: Create specialized agents by extending the base agent class
+6. **Custom authentication**: Modify the plugin's API authentication methods
+
+### Example: Adding a New Plugin
+
+```python
+# src/plugins/new_plugin.py
+from semantic_kernel.functions import kernel_function
+
+class NewPlugin:
+    @kernel_function
+    async def new_function(self, param: str) -> dict:
+        # Your implementation here
+        return {"result": "success"}
+```
+
+### Example: Adding a New Utility
+
+```python
+# src/utils/new_utility.py
+def new_helper_function():
+    # Your utility function here
+    pass
+```
 
 ## Architecture Notes
 
-This application follows the single agent pattern demonstrated in the workshop:
+This application follows a modular single agent pattern with the following principles:
 
-- Uses Semantic Kernel's automatic function calling capabilities
-- Implements a single plugin with focused functionality
-- Maintains conversation state through ChatHistory
-- Provides a natural language interface for complex API interactions
-- Supports both development (simulated) and production (real API) modes
+- **Modular Design**: Each component has a single responsibility and can be tested independently
+- **Semantic Kernel Integration**: Uses automatic function calling capabilities
+- **Configuration Management**: Centralized environment variable handling with validation
+- **Separation of Concerns**: Clear separation between CLI, agent logic, plugins, and utilities
+- **Maintainable Structure**: Easy to extend, test, and debug individual components
+- **Natural Language Interface**: Provides intuitive conversation flow for complex API interactions
+- **Dual Mode Support**: Both development (simulated) and production (real API) modes
 
 The agent automatically determines when to call the tracking function based on user queries, making it easy to ask questions like "Where is my package?" without needing to specify exact function calls.
+
+### Benefits of the Modular Structure
+
+1. **🧱 Testability**: Each module can be unit tested independently
+2. **🔄 Reusability**: Components can be imported and used in other projects
+3. **📖 Maintainability**: Easier to locate and fix issues
+4. **⚙️ Extensibility**: Simple to add new features without touching existing code
+5. **🔍 Debugging**: Verbose logging and clear separation make debugging easier
 
 ## Troubleshooting
 
@@ -187,13 +271,32 @@ The agent automatically determines when to call the tracking function based on u
 
 3. **URL Configuration**: Ensure your `SHIPMENT_API_BASE_URL` includes the correct protocol (https://) and domain.
 
-4. **Missing Dependencies**: If you get import errors, ensure all dependencies are installed with `pip install -r requirements.txt`.
+4. **Missing Dependencies**: Dependencies are managed by uv. If you encounter import errors, try:
+   ```bash
+   # Sync dependencies from lockfile
+   uv sync
+   
+   # Or install from pyproject.toml
+   uv pip install -r pyproject.toml
+   ```
 
-### Debug Mode
+5. **Module Import Issues**: Ensure you're running the application from the project root directory using `uv run src/app.py`
 
-The application prints configuration information when starting:
-- Base URL being used
-- Whether simulation mode is enabled  
-- Whether an API key is configured
+### Verbose Debug Mode
 
-Check these values if you're having connection issues.
+Enable verbose logging to see detailed function call information:
+```bash
+uv run src/app.py --verbose
+```
+
+This will show:
+- 📦 Function calls with parameters
+- 🔧 LLM requests and responses  
+- 📝 Detailed execution logs
+- 💾 Logs saved to 'semantic_kernel_debug.log'
+
+## About uv
+
+[uv](https://github.com/astral-sh/uv) is a fast, modern Python package and project manager. It replaces tools like `pip`, `pip-tools`, `pipx`, `poetry`, and `virtualenv`, and is recommended for reproducible, efficient dependency management in this project.
+
+- See [uv documentation](https://docs.astral.sh/uv/) for more details.
