@@ -16,7 +16,7 @@ This sample application demonstrates how to create a conversational AI agent usi
 
 1. Make sure you have Python 3.13+ installed
 2. [uv](https://github.com/astral-sh/uv) (recommended for dependency management)
-3. Set up your configuration in a `.env` file (copy from `src/.env.example`)
+3. Set up your configuration in a `.env` file (copy from `.env.example`)
 
 ### Configuration
 
