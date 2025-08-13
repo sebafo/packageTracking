@@ -4,6 +4,7 @@ Command-line interface utilities for the shipment tracking application.
 
 import sys
 import asyncio
+
 from agent import ShipmentTrackingAgent
 from utils import Spinner, setup_logging, check_verbose_mode
 
@@ -22,22 +23,29 @@ def print_help():
     print("  🔧 LLM requests and responses")
     print("  📝 Detailed execution logs")
     print("  💾 Logs saved to 'semantic_kernel_debug.log'")
+    print("")
+    print("Features:")
+    print("  💬 Real-time streaming responses for better user experience")
+    print("  🚀 Optimized for interactive conversations")
 
 
 def print_welcome(verbose_mode: bool):
     """Print welcome message and instructions."""
+    mode_str = " (VERBOSE MODE)" if verbose_mode else ""
+    
+    print(f"🚚 Shipment Tracking Agent Demo{mode_str}")
+    print("=" * 50)
+    
     if verbose_mode:
-        print("🚚 Shipment Tracking Agent Demo (VERBOSE MODE)")
-        print("=" * 50)
         print("📋 Verbose logging is enabled!")
         print("📝 Check 'semantic_kernel_debug.log' for detailed logs")
         print("🔍 Function calls and parameters will be logged to console and file")
         print("")
     else:
-        print("🚚 Shipment Tracking Agent Demo")
-        print("=" * 50)
         print("💡 Use --verbose or -v flag to enable detailed logging")
-        print("")
+    
+    print("🚀 Streaming responses enabled - responses appear in real-time!")
+    print("")
     
     print("Ask me about tracking packages! Try these examples:")
     print("- 'Track package PKG123456789'")
@@ -66,7 +74,7 @@ async def run_interactive_session():
     # Initialize the agent
     try:
         if verbose_mode:
-            logger.info("🚀 Starting Shipment Tracking Agent Demo")
+            logger.info("🚀 Starting Shipment Tracking Agent Demo with ChatCompletionAgent")
         agent = ShipmentTrackingAgent(verbose_mode=verbose_mode)
         if verbose_mode:
             logger.info("✅ Agent initialized and ready")
@@ -89,17 +97,10 @@ async def run_interactive_session():
             if not user_input:
                 continue
             
-            # Get response from the agent with spinner animation
-            spinner = Spinner()
-            spinner.start()
-            
+            # Get response from the agent with streaming
             try:
-                response = await agent.chat(user_input)
-                spinner.stop()
-                print("Agent:\n", end="")
-                print(response)
+                await agent.chat(user_input)
             except Exception as e:
-                spinner.stop()
                 print(f"\nError: {str(e)}")
                 print("Please try again.")
                 continue
@@ -111,6 +112,10 @@ async def run_interactive_session():
             print(f"\nError: {str(e)}")
             print("Please try again.")
 
+def main():
+    """Main entry point that can be called from the root main.py."""
+    asyncio.run(run_interactive_session())
+
 if __name__ == "__main__":
     """Main entry point for the application."""
-    asyncio.run(run_interactive_session())
+    main()
