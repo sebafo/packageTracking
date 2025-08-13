@@ -97,14 +97,13 @@ The application has been restructured into a modular architecture for better mai
 ```
 src/
 ├── __init__.py              # Package initialization
-├── app.py                   # Main entry point (simplified)
-├── cli.py                   # Command-line interface and interactive session
+├── main.py                  # Main entrypoint with interactive session
 ├── agent.py                 # Core ShipmentTrackingAgent class
 ├── config.py                # Configuration management
 ├── utils/                   # Utility modules
 │   ├── __init__.py
 │   ├── logging_config.py    # Logging setup and configuration
-│   └── spinner.py           # Spinner animation utility
+│   └── spinner.py           # Spinner animation utility / not used in this version
 ├── filters/                 # Semantic Kernel filters
 │   ├── __init__.py
 │   └── verbose_function_filter.py  # Function call logging
@@ -141,7 +140,7 @@ This plugin implements the core functionality for tracking packages:
 #### `filters/` - Function Call Filters
 - **verbose_function_filter.py**: Detailed logging of function invocations for debugging
 
-#### `cli.py` - Command Line Interface
+#### `main.py` - Command Line Interface
 Handles user interaction:
 - Command-line argument parsing
 - Interactive chat session management
